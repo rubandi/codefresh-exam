@@ -24,14 +24,11 @@ hosts = [
 
 $generalConfiguration = <<-SCRIPT
 
-#System upgrade
-sudo apt-get update
-sudo apt-get -y upgrade
-
 #######CRI Installation
 # Install Docker CE
 ## Set up the repository:  
 ### Install packages to allow apt to use a repository over HTTPS
+sudo apt-get update
 sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
 
 ### Add Docker’s official GPG key
@@ -80,7 +77,47 @@ apt-get install -y kubelet kubeadm kubectl
 apt-mark hold kubelet kubeadm kubectl
 #######
 
+# ip of this box
+IP_ADDR=`ifconfig eth1 | grep Mask | awk '{print $2}'| cut -f2 -d:`
+# set node-ip
+sudo sed -i "/^[^#]*KUBELET_EXTRA_ARGS=/c\KUBELET_EXTRA_ARGS=--node-ip=$IP_ADDR" /etc/default/kubelet
+sudo systemctl restart kubelet
 
+SCRIPT
+
+$masterConfiguration = <<-SCRIPT
+
+echo "Initializing of master node"
+
+# ip of this box
+IP_ADDR=`ifconfig eth1 | grep Mask | awk '{print $2}'| cut -f2 -d:`
+# Initializing k8s master
+HOST_NAME=$(hostname -s)
+sudo kubeadm init --apiserver-advertise-address=$IP_ADDR --apiserver-cert-extra-sans=$IP_ADDR  --node-name $HOST_NAME --pod-network-cidr=10.244.0.0/16
+
+#copying credentials for kubectl
+mkdir -vp /home/vagrant/.kube
+sudo cp -v /etc/kubernetes/admin.conf /home/vagrant/.kube/config
+sudo chown -v $(id -u vagrant):$(id -g vagrant) /home/vagrant/.kube/config
+
+#installing a pod network add-on
+sudo sysctl net.bridge.bridge-nf-call-iptables=1
+export KUBECONFIG=/etc/kubernetes/admin.conf
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/a70459be0084506e4ec919aa1c114638878db11b/Documentation/kube-flannel.yml
+
+#allow schedule pods on master
+kubectl taint nodes --all node-role.kubernetes.io/master-
+
+kubeadm token create --print-join-command > /home/vagrant/kubeadm_join_cmd.sh
+
+SCRIPT
+
+$nodeConfiguration = <<-SCRIPT
+
+echo "Adding node to cluster"
+sudo apt-get install -y sshpass
+sshpass -p "vagrant" scp -o StrictHostKeyChecking=no vagrant@192.168.7.101:/home/vagrant/kubeadm_join_cmd.sh .
+sudo sh ./kubeadm_join_cmd.sh
 
 SCRIPT
 
@@ -104,6 +141,12 @@ Vagrant.configure("2") do |config|
       end
 
       config.vm.provision "shell", inline: $generalConfiguration
+
+      if host[:type] == "master"
+        config.vm.provision "shell", inline: $masterConfiguration
+      else
+        config.vm.provision "shell", inline: $nodeConfiguration
+      end
 
     end
 
