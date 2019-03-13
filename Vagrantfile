@@ -65,7 +65,7 @@ sudo systemctl restart docker
 # kubelet requires swap off
 swapoff -a
 # keep swap off after reboot
-sudo sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
+sudo sed -i "s/^.* swap .*$/#&/" /etc/fstab
 
 #######Installing kubeadm, kubelet and kubectl
 curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
