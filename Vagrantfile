@@ -104,7 +104,8 @@ chown -v $(id -u vagrant):$(id -g vagrant) /home/vagrant/.kube/config
 #installing a pod network add-on
 sysctl net.bridge.bridge-nf-call-iptables=1
 export KUBECONFIG=/etc/kubernetes/admin.conf
-kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/a70459be0084506e4ec919aa1c114638878db11b/Documentation/kube-flannel.yml
+kubectl apply -f /vagrant/kube-flannel.yml
+#kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/a70459be0084506e4ec919aa1c114638878db11b/Documentation/kube-flannel.yml
 
 #allow schedule pods on master
 kubectl taint nodes --all node-role.kubernetes.io/master-
