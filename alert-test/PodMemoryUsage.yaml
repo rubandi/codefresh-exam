@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: alert-test
+spec:
+  containers:
+  - name: alert-test
+    image: polinux/stress
+    resources:
+      requests:
+        memory: "50Mi"
+    command: ["stress"]
+    args: ["--vm-bytes", "1500M", "--vm-keep", "-m", "1"]

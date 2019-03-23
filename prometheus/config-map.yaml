@@ -8,15 +8,39 @@ metadata:
 data:
   prometheus.rules: |-
     groups:
-    - name: test alert
+    - name: Cluster_state
       rules:
-      - alert: High Pod Meory
-        expr: sum(container_memory_usage_bytes) > 1
+      - alert: KubeControllerIsDown
+        expr: absent(kube_pod_status_phase{job="kubernetes-pods", pod="kube-controller-manager-k8s-master", phase="Running"} == 1)
         for: 1m
         labels:
-          severity: slack
+          severity: critical
         annotations:
-          summary: High Memory Usage
+          summary: "Kubernetes controller manager is down"
+          description: "Kubernetes controller manager is not in Running state or not created"
+      - alert: NodeCpuHigh
+        expr: sum(rate(node_cpu{mode!="idle", mode!="iowait", mode!~"guest.*"}[1m])) BY (instance, cpu)*100 > 85
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }} node"
+          description: "{{ $labels.instance }} node has high utilization at least one of CPU cores (current value: {{ $value }})"
+      - alert: NonPodCpuHigh
+        expr: (sum(rate(container_cpu_usage_seconds_total{job="kubernetes-cadvisor", id="/"}[1m])) by (instance) - sum(rate(container_cpu_usage_seconds_total{job="kubernetes-cadvisor", image!=""}[1m])) by (instance))*100 > 30
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage by non-pod processes on {{ $labels.instance }} node"
+          description: "Sum of CPU usage by non-pod processes on {{ $labels.instance }} node is higher than 30% (current value: {{ $value }})"
+      - alert: PodMemoryHigh
+        expr: (sum(container_memory_usage_bytes{job="kubernetes-cadvisor", image!=""}) by(pod_name, instance) / on(instance) group_left node_memory_MemTotal{job="kubernetes-pods", app="node-exporter"})*100 > 70
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage by {{ $labels.pod_name }} pod"
+          description: "Memory usage by pod: {{ $labels.pod_name }} on {{ $labels.instance }} node is higher than 70% of node memory (current value: {{ $value }})"
   prometheus.yml: |-
     global:
       scrape_interval: 30s
@@ -31,9 +55,6 @@ data:
           - "alertmanager.monitoring.svc:9093"
 
     scrape_configs:
-      - job_name: 'node-exporter'
-        static_configs:
-        - targets: ['node-exporter:9100']
 
       - job_name: 'kubernetes-apiservers'
 
@@ -78,6 +99,16 @@ data:
         - role: pod
 
         relabel_configs:
+        - source_labels: [__meta_kubernetes_pod_label_component]
+          action: replace
+          regex: kube-controller-manager
+          replacement: true
+          target_label: __meta_kubernetes_pod_annotation_prometheus_io_scrape
+        - source_labels: [__meta_kubernetes_pod_label_component]
+          action: replace
+          regex: kube-controller-manager
+          replacement: 10252
+          target_label: __meta_kubernetes_pod_annotation_prometheus_io_port
         - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
           action: keep
           regex: true
@@ -98,6 +129,10 @@ data:
         - source_labels: [__meta_kubernetes_pod_name]
           action: replace
           target_label: kubernetes_pod_name
+        - source_labels: [__meta_kubernetes_pod_node_name]
+          regex: (.+)
+          replacement: $1
+          target_label: instance
 
       - job_name: 'kubernetes-cadvisor'
 

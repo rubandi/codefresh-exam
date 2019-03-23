@@ -105,12 +105,27 @@ chown -v $(id -u vagrant):$(id -g vagrant) /home/vagrant/.kube/config
 sysctl net.bridge.bridge-nf-call-iptables=1
 export KUBECONFIG=/etc/kubernetes/admin.conf
 kubectl apply -f /vagrant/kube-flannel.yml
-#kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/a70459be0084506e4ec919aa1c114638878db11b/Documentation/kube-flannel.yml
 
 #allow schedule pods on master
 kubectl taint nodes --all node-role.kubernetes.io/master-
 
 kubeadm token create --print-join-command > /home/vagrant/kubeadm_join_cmd.sh
+
+#deployment of prometheus and exporters
+kubectl apply -f /vagrant/prometheus/namespace.yaml
+kubectl apply -f /vagrant/prometheus/clusterRole.yaml
+kubectl apply -f /vagrant/prometheus/config-map.yaml
+kubectl apply -f /vagrant/prometheus/prometheus-deployment.yaml
+kubectl apply -f /vagrant/prometheus/prometheus-service.yaml
+
+kubectl apply -f /vagrant/prometheus/kube-state-metrics/kube-state-metrics-service-account.yaml
+kubectl apply -f /vagrant/prometheus/kube-state-metrics/kube-state-metrics-cluster-role.yaml
+kubectl apply -f /vagrant/prometheus/kube-state-metrics/kube-state-metrics-cluster-role-binding.yaml
+kubectl apply -f /vagrant/prometheus/kube-state-metrics/kube-state-metrics-role.yaml
+kubectl apply -f /vagrant/prometheus/kube-state-metrics/kube-state-metrics-role-binding.yaml
+kubectl apply -f /vagrant/prometheus/kube-state-metrics/kube-state-metrics-deployment.yaml
+
+kubectl apply -f /vagrant/prometheus/node-exporter/node-exporter-daemonset.yaml
 
 SCRIPT
 
