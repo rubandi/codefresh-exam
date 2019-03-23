@@ -11,7 +11,7 @@ data:
     - name: Cluster_state
       rules:
       - alert: KubeControllerIsDown
-        expr: absent(kube_pod_status_phase{job="kubernetes-pods", pod="kube-controller-manager-k8s-master", phase="Running"} == 1)
+        expr: absent(kube_pod_container_status_running{job="kubernetes-pods", pod="kube-controller-manager-k8s-master"} == 1)
         for: 1m
         labels:
           severity: critical
@@ -19,7 +19,7 @@ data:
           summary: "Kubernetes controller manager is down"
           description: "Kubernetes controller manager is not in Running state or not created"
       - alert: NodeCpuHigh
-        expr: sum(rate(node_cpu{mode!="idle", mode!="iowait", mode!~"guest.*"}[1m])) BY (instance, cpu)*100 > 85
+        expr: sum(rate(node_cpu{job="kubernetes-pods", mode!="idle", mode!="iowait", mode!~"guest.*"}[1m])) BY (instance, cpu)*100 > 85
         for: 15m
         labels:
           severity: warning
@@ -35,7 +35,7 @@ data:
           summary: "High CPU usage by non-pod processes on {{ $labels.instance }} node"
           description: "Sum of CPU usage by non-pod processes on {{ $labels.instance }} node is higher than 30% (current value: {{ $value }})"
       - alert: PodMemoryHigh
-        expr: (sum(container_memory_usage_bytes{job="kubernetes-cadvisor", image!=""}) by(pod_name, instance) / on(instance) group_left node_memory_MemTotal{job="kubernetes-pods", app="node-exporter"})*100 > 70
+        expr: (sum(container_memory_usage_bytes{job="kubernetes-cadvisor", image!=""}) by(pod_name, instance) / on(instance) group_left node_memory_MemTotal{job="kubernetes-pods"})*100 > 70
         labels:
           severity: warning
         annotations:
