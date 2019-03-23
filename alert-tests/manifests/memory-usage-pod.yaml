@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: alert-test
+  name: memory-stress
 spec:
   containers:
-  - name: alert-test
+  - name: memory-stress
     image: polinux/stress
     resources:
       requests:

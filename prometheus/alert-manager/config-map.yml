@@ -14,8 +14,12 @@ data:
       group_wait: 10s
       group_interval: 10s
       repeat_interval: 1h
-      receiver: 'dima-test'
+      receiver: 'slack-test'
     receivers:
-      - name: 'dima-test'
+      - name: 'http-test'
         webhook_configs:
         - url: 'https://webhook.site/1b5fb204-1100-448a-b3cf-273bdfa2eff4' 
+      - name: 'slack-test'
+        slack_configs:
+        - api_url: https://hooks.slack.com/services/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
+          channel: '#prometheus'
