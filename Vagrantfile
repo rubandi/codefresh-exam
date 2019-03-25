@@ -112,11 +112,7 @@ kubectl taint nodes --all node-role.kubernetes.io/master-
 kubeadm token create --print-join-command > /home/vagrant/kubeadm_join_cmd.sh
 
 #deployment of prometheus and exporters
-kubectl apply -f /vagrant/prometheus/namespace.yaml
-kubectl apply -f /vagrant/prometheus/clusterRole.yaml
-kubectl apply -f /vagrant/prometheus/config-map.yaml
-kubectl apply -f /vagrant/prometheus/prometheus-deployment.yaml
-kubectl apply -f /vagrant/prometheus/prometheus-service.yaml
+kubectl apply -f /vagrant/prometheus/node-exporter/node-exporter-daemonset.yaml
 
 kubectl apply -f /vagrant/prometheus/kube-state-metrics/kube-state-metrics-service-account.yaml
 kubectl apply -f /vagrant/prometheus/kube-state-metrics/kube-state-metrics-cluster-role.yaml
@@ -125,7 +121,11 @@ kubectl apply -f /vagrant/prometheus/kube-state-metrics/kube-state-metrics-role.
 kubectl apply -f /vagrant/prometheus/kube-state-metrics/kube-state-metrics-role-binding.yaml
 kubectl apply -f /vagrant/prometheus/kube-state-metrics/kube-state-metrics-deployment.yaml
 
-kubectl apply -f /vagrant/prometheus/node-exporter/node-exporter-daemonset.yaml
+kubectl apply -f /vagrant/prometheus/namespace.yaml
+kubectl apply -f /vagrant/prometheus/clusterRole.yaml
+kubectl apply -f /vagrant/prometheus/config-map.yaml
+kubectl apply -f /vagrant/prometheus/prometheus-deployment.yaml
+kubectl apply -f /vagrant/prometheus/prometheus-service.yaml
 
 SCRIPT
 
