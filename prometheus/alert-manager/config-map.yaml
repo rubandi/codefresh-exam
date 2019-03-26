@@ -8,11 +8,10 @@ metadata:
 data:
   alertmanager.yml: |-
     global:
-      slack_api_url: https://hooks.slack.com/services/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
     route:
       receiver: 'slack-prometheus'
       group_wait: 3m
-      repeat_interval: 10m
+      repeat_interval: 3h
       group_by: ['alertname']
       routes:
       - receiver: 'slack-prometheus'
@@ -23,21 +22,20 @@ data:
         match:
           severity: critical
     receivers:
-      - name: 'http-test'
-        webhook_configs:
-        - url: 'https://webhook.site/1b5fb204-1100-448a-b3cf-273bdfa2eff4' 
-      - name: 'slack-prometheus'
-        slack_configs:
-          - channel: '#prometheus'
-            pretext: "<!channel>"
-            title: "{{ range .Alerts }}{{ .Annotations.summary }}\n{{ end }}"
-            text: "{{ range .Alerts }}{{ .Annotations.description }}\n{{ end }}"
-      - name: 'slack-critical'
-        slack_configs:
-          - channel: '#critical'
-            pretext: "<!channel>"
-            title: "{{ range .Alerts }}{{ .Annotations.summary }}\n{{ end }}"
-            text: "{{ range .Alerts }}{{ .Annotations.description }}\n{{ end }}"
+    - name: 'slack-prometheus'
+      slack_configs:
+      - api_url: https://hooks.slack.com/services/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
+        channel: '#prometheus'
+        pretext: "<!channel>"
+        title: "{{ range .Alerts }}{{ .Annotations.summary }}\n{{ end }}"
+        text: "{{ range .Alerts }}{{ .Annotations.description }}\n{{ end }}"
+    - name: 'slack-critical'
+      slack_configs:
+      - api_url: https://hooks.slack.com/services/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
+        channel: '#critical'
+        pretext: "<!channel>"
+        title: "{{ range .Alerts }}{{ .Annotations.summary }}\n{{ end }}"
+        text: "{{ range .Alerts }}{{ .Annotations.description }}\n{{ end }}"
     inhibit_rules:
     - source_match:
         cpu: 'cpu0'
