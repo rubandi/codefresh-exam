@@ -20,3 +20,17 @@ Repository directory is mount to */vagrant*. For example, to run *KubeController
 `$ sudo /vagrant/alert-tests/KubeControllerIsDown-no-pod_break.sh`
 
 All scripts, except *NonPodCpuHigh.sh*, should be run on master node (*k8s-master* VM). Also *KubeControllerIsDown* scripts should be run with *sudo*.
+
+## Notifications
+
+To get notifications you need to update AlertManager config in *codefresh-exam/prometheus/alert-manager/config-map.yaml* by updating the following fields:
+
+```
+receivers:  
+  ...
+  slack_configs:
+    api_url: <your_webhook_URL>  
+    channel: <your_chanel_name>
+```
+
+How to create Incoming Webhooks for Slack you may read [here](https://api.slack.com/incoming-webhooks).
