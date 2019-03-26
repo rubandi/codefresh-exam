@@ -111,7 +111,7 @@ kubectl taint nodes --all node-role.kubernetes.io/master-
 
 kubeadm token create --print-join-command > /home/vagrant/kubeadm_join_cmd.sh
 
-#deployment of prometheus and exporters
+#deployment of prometheus, alertmanager and exporters
 kubectl apply -f /vagrant/prometheus/node-exporter/node-exporter-daemonset.yaml
 
 kubectl apply -f /vagrant/prometheus/kube-state-metrics/kube-state-metrics-service-account.yaml
@@ -120,6 +120,10 @@ kubectl apply -f /vagrant/prometheus/kube-state-metrics/kube-state-metrics-clust
 kubectl apply -f /vagrant/prometheus/kube-state-metrics/kube-state-metrics-role.yaml
 kubectl apply -f /vagrant/prometheus/kube-state-metrics/kube-state-metrics-role-binding.yaml
 kubectl apply -f /vagrant/prometheus/kube-state-metrics/kube-state-metrics-deployment.yaml
+
+kubectl apply -f /vagrant/prometheus/alert-manager/config-map.yaml
+kubectl apply -f /vagrant/prometheus/alert-manager/alertmanager-deployment.yaml
+kubectl apply -f /vagrant/prometheus/alert-manager/alertmanager-service.yaml
 
 kubectl apply -f /vagrant/prometheus/namespace.yaml
 kubectl apply -f /vagrant/prometheus/clusterRole.yaml
