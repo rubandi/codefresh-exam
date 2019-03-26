@@ -23,8 +23,12 @@ spec:
             - containerPort: 9100
               protocol: TCP
           resources:
+            limits:
+              cpu: 10m
+              memory: 50Mi
             requests:
-              cpu: 0.15
+              cpu: 10m
+              memory: 50Mi
           securityContext:
             privileged: true
           image: prom/node-exporter:v0.15.2

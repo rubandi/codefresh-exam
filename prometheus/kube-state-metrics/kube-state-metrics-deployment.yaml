@@ -27,6 +27,13 @@ spec:
           containerPort: 8080
         - name: telemetry
           containerPort: 8081
+        resources:
+          limits:
+            cpu: 100m
+            memory: 150Mi
+          requests:
+            cpu: 50m
+            memory: 100Mi
         readinessProbe:
           httpGet:
             path: /healthz
