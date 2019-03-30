@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: alertmanager
-          image: prom/alertmanager
+          image: prom/alertmanager:v0.16.0
           volumeMounts:
             - name: alertmanager-config
               mountPath: /etc/alertmanager/
